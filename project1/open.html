@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabbed UI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="tab-container">
+      <button class="tab-link active" onclick="openTab('tab1')">Table</button>
+      <button class="tab-link" onclick="openTab('tab2')">List</button>
+      <button class="tab-link" onclick="openTab('tab3')">Flex Layout</button>
+    </div>
+
+    <div id="tab1" class="tab-content active">
+      <div class="table-controls">
+        <button onclick="insertModal()">Insert Row</button>
+      </div>
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="tab2" class="tab-content">
+      <h3>List</h3>
+      <button onclick="openListModal()">Add New Item</button>
+      <ul id="item-list">
+        <!-- List items will be added here dynamically -->
+      </ul>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="addItemModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeListModal()">&times;</span>
+        <h2>Add New Item</h2>
+        <input type="text" id="newItemInput" placeholder="Enter new item" />
+        <button onclick="addItem()">Add Item</button>
+      </div>
+    </div>
+
+    <div id="tab3" class="tab-content">
+      <div class="flex-container">
+        <div class="column">Column 1</div>
+        <div class="column">Column 2</div>
+      </div>
+    </div>
+
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <form id="edit-form">
+          <label for="edit-id">ID:</label>
+          <input type="text" id="edit-id" name="id" readonly /><br /><br />
+          <label for="edit-name">Name:</label>
+          <input type="text" id="edit-name" name="name" /><br /><br />
+          <button type="button" onclick="saveChanges()">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="insertModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeInsertModal()">&times;</span>
+        <form id="edit-form">
+          <label for="edit-id">ID:</label>
+          <input
+            type="text"
+            id="insertModal-edit-id"
+            name="id"
+            readonly
+          /><br /><br />
+          <label for="edit-name">Name:</label>
+          <input
+            type="text"
+            id="insertModal-edit-name"
+            name="name"
+          /><br /><br />
+          <button type="button" onclick="insert()">Insert</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
