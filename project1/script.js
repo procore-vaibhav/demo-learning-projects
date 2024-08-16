@@ -1,5 +1,4 @@
 let tableData = [];
-let itemList = [];
 
 //-------------------------------------- Table related functionalities---------------------------
 
@@ -8,6 +7,7 @@ function initializeTable() {
   if (storedData) {
     tableData = JSON.parse(storedData);
     renderTable();
+    renderList();
   }
 }
 
@@ -15,7 +15,7 @@ function renderTable() {
   const tableBody = document
     .getElementById("data-table")
     .getElementsByTagName("tbody")[0];
-  tableBody.innerHTML = "";
+  tableBody.innerHTML = ""; 
 
   tableData.forEach((row, index) => {
     const newRow = tableBody.insertRow();
@@ -49,6 +49,7 @@ function insert() {
   tableData.push(newItem);
   saveToSessionStorage();
   renderTable();
+  renderList();
   closeInsertModal();
 }
 
@@ -58,6 +59,7 @@ function deleteRow(btn) {
   tableData.splice(rowIndex, 1);
   saveToSessionStorage();
   renderTable();
+  renderList();
 }
 
 function editRow(btn) {
@@ -79,6 +81,7 @@ function saveChanges() {
   tableData[rowIndex].name = name;
   saveToSessionStorage();
   renderTable();
+  renderList();
   closeModal();
 }
 
@@ -98,63 +101,17 @@ function openTab(tabName) {
 
 // ------------------------------------------------ List related functionalities------------------
 
-function initializeList() {
-  const storedList = sessionStorage.getItem("itemList");
-  if (storedList) {
-    itemList = JSON.parse(storedList);
-    renderList();
-  }
-}
 
-// Function to render the list out of list array
+// Function to render the list out of table array
 function renderList() {
   const listElement = document.getElementById("item-list");
   listElement.innerHTML = "";
 
-  itemList.forEach((item, index) => {
+  tableData.forEach((row, index) => {
     const listItem = document.createElement("li");
-    listItem.textContent = `${index + 1}.   ${item}`;
-
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "Remove";
-    removeButton.onclick = function () {
-      removeItem(index);
-    };
-
-    listItem.appendChild(removeButton);
+    listItem.textContent = `${index + 1}.   ${row.name}`;
     listElement.appendChild(listItem);
   });
 }
 
-function openListModal() {
-  document.getElementById("addItemModal").style.display = "block";
-}
-
-function closeListModal() {
-  document.getElementById("addItemModal").style.display = "none";
-}
-
-function addItem() {
-  const newItem = document.getElementById("newItemInput").value;
-  if (newItem) {
-    itemList.push(newItem);
-    saveListToSessionStorage();
-    renderList();
-    closeListModal();
-    document.getElementById("newItemInput").value = "";
-  }
-}
-
-function removeItem(index) {
-  itemList.splice(index, 1);
-  saveListToSessionStorage();
-  renderList();
-}
-
-function saveListToSessionStorage() {
-  sessionStorage.setItem("itemList", JSON.stringify(itemList));
-}
-
-// Initializing different components
-initializeList();
 initializeTable();
