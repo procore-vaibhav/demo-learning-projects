@@ -13,9 +13,7 @@ function initializeTable() {
 }
 
 function renderTable() {
-  const tableBody = document
-    .getElementById('data-table')
-    .getElementsByTagName('tbody')[0];
+  const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
   tableBody.innerHTML = '';
 
   tableData.forEach((row, index) => {
