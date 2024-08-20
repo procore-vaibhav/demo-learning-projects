@@ -10,7 +10,7 @@ const config = [
   {
     files: ['**/*.js'],
     languageOptions: {
-      sourceType: 'script',
+      sourceType: 'module',
       globals: globals.browser,
     },
     plugins: {

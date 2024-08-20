@@ -4,18 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tabbed UI</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="tab-container">
-      <button class="tab-link active" onclick="openTab('tab1')">Table</button>
-      <button class="tab-link" onclick="openTab('tab2')">List</button>
-      <button class="tab-link" onclick="openTab('tab3')">Flex Layout</button>
+      <button class="tab-link active" id="tab1-button">Table</button>
+      <button class="tab-link" id="tab2-button">List</button>
+      <button class="tab-link" id="tab3-button">Flex Layout</button>
     </div>
 
     <div id="tab1" class="tab-content active">
       <div class="table-controls">
-        <button onclick="insertModal()">Insert Row</button>
+        <button id="insertModalButton">Insert Row</button>
       </div>
       <table id="data-table">
         <thead>
@@ -45,30 +45,30 @@
 
     <div id="modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
+        <span class="close" id="closeModalButton">&times;</span>
         <form id="edit-form">
           <label for="edit-id">ID:</label>
           <input type="text" id="edit-id" name="id" readonly /><br /><br />
           <label for="edit-name">Name:</label>
           <input type="text" id="edit-name" name="name" /><br /><br />
-          <button type="button" onclick="saveChanges()">Save Changes</button>
+          <button type="button" id="saveChangesButton">Save Changes</button>
         </form>
       </div>
     </div>
 
     <div id="insertModal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeInsertModal()">&times;</span>
+        <span class="close" id="closeInsertModalButton">&times;</span>
         <form id="edit-form">
           <label for="edit-id">ID:</label>
           <input type="text" id="insertModal-edit-id" name="id" readonly /><br /><br />
           <label for="edit-name">Name:</label>
           <input type="text" id="insertModal-edit-name" name="name" /><br /><br />
-          <button type="button" onclick="insert()">Insert</button>
+          <button type="button" id="saveInsertButton">Insert</button>
         </form>
       </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="../dist/bundle.js" type="module"></script>
   </body>
 </html>
