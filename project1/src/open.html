@@ -15,7 +15,7 @@
 
     <div id="tab1" class="tab-content active">
       <div class="table-controls">
-        <button id="insertModalButton">Insert Row</button>
+        <button id="insert-btn">Insert Row</button>
       </div>
       <table id="data-table">
         <thead>
@@ -47,24 +47,13 @@
       <div class="modal-content">
         <span class="close" id="closeModalButton">&times;</span>
         <form id="edit-form">
+          <!-- Hidden input to track action type -->
+          <input type="hidden" id="modal-action" />
           <label for="edit-id">ID:</label>
           <input type="text" id="edit-id" name="id" readonly /><br /><br />
           <label for="edit-name">Name:</label>
           <input type="text" id="edit-name" name="name" /><br /><br />
-          <button type="button" id="saveChangesButton">Save Changes</button>
-        </form>
-      </div>
-    </div>
-
-    <div id="insertModal" class="modal">
-      <div class="modal-content">
-        <span class="close" id="closeInsertModalButton">&times;</span>
-        <form id="edit-form">
-          <label for="edit-id">ID:</label>
-          <input type="text" id="insertModal-edit-id" name="id" readonly /><br /><br />
-          <label for="edit-name">Name:</label>
-          <input type="text" id="insertModal-edit-name" name="name" /><br /><br />
-          <button type="button" id="saveInsertButton">Insert</button>
+          <button type="button" id="submit-btn">Save Changes</button>
         </form>
       </div>
     </div>

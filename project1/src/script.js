@@ -31,7 +31,7 @@ function renderTable() {
   const deleteButtons = document.querySelectorAll('.delete-btn');
 
   updateButtons.forEach((button, index) => {
-    button.addEventListener('click', () => editRow(index));
+    button.addEventListener('click', () => openModal('edit', index));
   });
 
   deleteButtons.forEach((button, index) => {
@@ -43,32 +43,6 @@ function saveToSessionStorage() {
   sessionStorage.setItem('tableData', JSON.stringify(tableData));
 }
 
-export function insertModal() {
-  let size = tableData.length;
-  document.getElementById('insertModal-edit-id').value = size + 1;
-  const nameInput = document.getElementById('insertModal-edit-name');
-  nameInput.value = 'new item';
-  document.getElementById('insertModal').style.display = 'block';
-
-  nameInput.select();
-}
-
-function closeInsertModal() {
-  document.getElementById('insertModal').style.display = 'none';
-}
-
-function insert() {
-  const newItem = {
-    id: document.getElementById('insertModal-edit-id').value,
-    name: document.getElementById('insertModal-edit-name').value,
-  };
-  tableData.push(newItem);
-  saveToSessionStorage();
-  renderTable();
-  renderList(tableData);
-  closeInsertModal();
-}
-
 function deleteRow(index) {
   tableData.splice(index, 1);
   saveToSessionStorage();
@@ -76,24 +50,44 @@ function deleteRow(index) {
   renderList(tableData);
 }
 
-function editRow(index) {
-  const data = tableData[index];
-  document.getElementById('edit-id').value = index + 1;
+// Function to open the modal
+function openModal(action, index = null) {
   const nameInput = document.getElementById('edit-name');
-  nameInput.value = data.name;
-  document.getElementById('modal').style.display = 'block';
+  const submitBtn = document.getElementById('submit-btn');
 
-  nameInput.select();
+  document.getElementById('modal-action').value = action;
+  if (action === 'edit') {
+    document.getElementById('edit-id').value = index + 1;
+    nameInput.value = tableData[index].name;
+    submitBtn.textContent = 'Save Changes';
+  } else if (action === 'insert') {
+    document.getElementById('edit-id').value = tableData.length + 1;
+    nameInput.value = 'new Item';
+    submitBtn.textContent = 'Insert Row';
+  }
+
+  setTimeout(() => {
+    nameInput.select();
+  }, 0);
+  document.getElementById('modal').style.display = 'block';
 }
 
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
 }
 
+// Function to save changes or insert a new row
 function saveChanges() {
-  const rowIndex = document.getElementById('edit-id').value - 1;
+  const action = document.getElementById('modal-action').value;
   const name = document.getElementById('edit-name').value;
-  tableData[rowIndex].name = name;
+
+  if (action === 'edit') {
+    const rowIndex = document.getElementById('edit-id').value - 1;
+    tableData[rowIndex].name = name;
+  } else if (action === 'insert') {
+    tableData.push({ name });
+  }
+
   saveToSessionStorage();
   renderTable();
   renderList(tableData);
@@ -129,12 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
     openTab('tab3');
   });
 
-  // Attach event listeners for the insert modal controls
-  document.getElementById('insertModalButton').addEventListener('click', insertModal);
-  document.getElementById('saveInsertButton').addEventListener('click', insert);
-  document.getElementById('closeInsertModalButton').addEventListener('click', closeInsertModal);
+  // Add event listener for modal close button
+  document.querySelector('.close').addEventListener('click', closeModal);
 
-  // Attach event listeners for the edit modal controls
-  document.getElementById('saveChangesButton').addEventListener('click', saveChanges);
-  document.getElementById('closeModalButton').addEventListener('click', closeModal);
+  // Add event listener for form submission
+  document.getElementById('submit-btn').addEventListener('click', saveChanges);
+
+  // Add event listener for the insert button
+  document.getElementById('insert-btn').addEventListener('click', () => openModal('insert'));
 });
