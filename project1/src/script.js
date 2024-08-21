@@ -113,15 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeTable();
 
   // Attach event listners for the openTab buttons
-  document.getElementById('tab1-button').addEventListener('click', function () {
-    openTab('tab1');
-  });
-  document.getElementById('tab2-button').addEventListener('click', function () {
-    openTab('tab2');
-  });
-  document.getElementById('tab3-button').addEventListener('click', function () {
-    openTab('tab3');
-  });
+  document.getElementById('tab1-button').addEventListener('click', () => openTab('tab1'));
+  document.getElementById('tab2-button').addEventListener('click', () => openTab('tab2'));
+  document.getElementById('tab3-button').addEventListener('click', () => openTab('tab3'));
 
   // Add event listener for modal close button
   document.querySelector('.close').addEventListener('click', closeModal);
