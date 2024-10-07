@@ -63,12 +63,15 @@ jobs:
           echo "Closing existing PR #${{ steps.pr_check.outputs.pr_number }}"
           gh pr close ${{ steps.pr_check.outputs.pr_number }} --delete-branch
 
-      # Step 8: Create sync branch and push changes
-      - name: Create sync branch
+      # Step 8: Recreate sync branch and push changes
+      # Recreating the sync-main-to-staging branch after the previous PR is closed
+      - name: Recreate sync branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
+          git checkout main
+          git pull origin main  # Ensure you have the latest main branch changes
           git checkout -b sync-main-to-staging
-          git push origin sync-main-to-staging
+          git push origin sync-main-to-staging --force  # Force to push recreated branch
 
       # Step 9: Create new Pull Request
       - name: Create new Pull Request
