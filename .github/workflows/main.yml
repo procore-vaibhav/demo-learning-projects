@@ -12,24 +12,20 @@ jobs:
   create_pull_request:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Step 3: Fetch staging branch
       - name: Fetch staging branch 
         run: git fetch origin staging
 
-      # Step 4: Check for differences
       - name: Check for differences
         id: check_diff
         run: |
           git diff --quiet origin/staging HEAD
-        continue-on-error: true  # Proceed if differences are found
+        continue-on-error: true 
 
-      # Step 5: Check if Pull Request exists
       - name: Check if Pull Request exists
         id: pr_check
         env:
@@ -43,7 +39,6 @@ jobs:
             echo "pr_number=none" >> $GITHUB_ENV
           fi
 
-      # Step 6: Create new PR if no PR exists
       - name: Create new Pull Request if none exists
         if: ${{ env.pr_number == 'none' && steps.check_diff.outcome == 'failure' }}
         env:
@@ -52,11 +47,10 @@ jobs:
           gh pr create --base staging --head main \
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
-
-      # Step 7: Add comment to existing PR if it exists
+          
       - name: Add comment to existing PR
         if: ${{ env.pr_number != 'none' && steps.check_diff.outcome == 'failure' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ env.pr_number }} --body "New changes detected and are automatically synced from main to staging."
+          gh pr comment ${{ env.pr_number }} --body "new changes found and automatically added here."
