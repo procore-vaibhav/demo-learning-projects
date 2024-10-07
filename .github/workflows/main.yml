@@ -27,7 +27,6 @@ jobs:
         continue-on-error: true 
 
       - name: Check if Pull Request exists
-        id: pr_check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         run: |
