@@ -18,9 +18,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install GitHub CLI
-        run: sudo apt-get install gh -y
-
       - name: Configure Git for commit
         run: |
           git config --global user.name 'github-actions[bot]'
