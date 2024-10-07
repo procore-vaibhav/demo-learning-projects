@@ -1,0 +1,90 @@
+name: Auto PR from Main to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # Grant write permissions to contents
+  pull-requests: write  # Grant write permissions to pull requests
+
+jobs:
+  create_pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Step 2: Install GitHub CLI
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
+      # Step 3: Configure Git for commit
+      - name: Configure Git for commit
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      # Step 4: Fetch staging branch
+      - name: Fetch all branches
+        run: git fetch origin staging
+
+      # Step 5: Check for differences between main and staging
+      - name: Check for differences
+        id: check_diff
+        run: |
+          git diff --quiet origin/staging HEAD
+        continue-on-error: true  # Continue if differences are found
+
+      # Step 6: Check if a Pull Request already exists
+      - name: Check if Pull Request exists
+        id: pr_check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Pass the GitHub token for authentication
+        run: |
+          pr_number=$(gh pr list --base staging --head sync-main-to-staging --json number --jq '.[].number')
+          if [ -n "$pr_number" ]; then
+            echo "PR #$pr_number exists"
+            echo "::set-output name=pr_number::$pr_number"
+          else
+            echo "::set-output name=pr_number::none"
+          fi
+
+      # Step 7: Close existing PR (if any)
+      - name: Close existing PR
+        if: ${{ steps.pr_check.outputs.pr_number != 'none' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Closing existing PR #${{ steps.pr_check.outputs.pr_number }}"
+          gh pr close ${{ steps.pr_check.outputs.pr_number }}
+
+      # Step 8: Recreate sync branch and push changes
+      - name: Recreate sync branch
+        if: ${{ steps.check_diff.outcome == 'failure' }}
+        run: |
+          git checkout main
+          git pull origin main  # Ensure you have the latest main branch changes
+          git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
+          git push origin sync-main-to-staging --force  # Force push recreated branch
+
+      # Step 9: Create new Pull Request
+      - name: Create new Pull Request
+        if: ${{ steps.check_diff.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --base staging --head sync-main-to-staging \
+          --title "Auto PR: Sync changes from main to staging" \
+          --body "This PR automatically syncs changes from the main branch to staging."
+
+      # Step 10: Switch to another branch and delete the sync branch
+      - name: Switch to main and delete sync branch
+        if: ${{ steps.check_diff.outcome == 'failure' }}
+        run: |
+          git checkout main
+          git branch -D sync-main-to-staging  # Delete the local sync branch after switching
