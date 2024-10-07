@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write  # Added pull-requests write permission
+  pull-requests: write  # Ensuring PR write permissions
 
 jobs:
   sync_to_staging:
@@ -32,10 +32,11 @@ jobs:
       - name: Check for differences between main and staging
         id: check_diff
         run: |
-          git diff --quiet origin/staging HEAD || true  # This ensures the step doesn't fail the job
+          git diff --quiet origin/staging HEAD
+        continue-on-error: true  # Allow continuing if differences exist (to create PR)
 
       - name: Create or update PR branch
-        if: ${{ steps.check_diff.outcome == 'failure' }}
+        if: ${{ steps.check_diff.outcome == 'failure' }}  # Proceed only if there are differences
         run: |
           git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
           git push origin sync-main-to-staging
@@ -43,9 +44,10 @@ jobs:
       - name: Check if PR already exists
         id: pr_check
         run: |
-          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length' || true  # Avoid failing the job
+          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length'
+        continue-on-error: true  # Continue if PR exists
 
-      - name: Create new Pull Request
+      - name: Create Pull Request if none exists
         if: ${{ steps.pr_check.outputs.result == '0' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,6 +56,6 @@ jobs:
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
 
-      - name: Skip PR creation if already exists
+      - name: PR already exists, skip creation
         if: ${{ steps.pr_check.outputs.result != '0' }}
         run: echo "PR already exists, skipping creation."
