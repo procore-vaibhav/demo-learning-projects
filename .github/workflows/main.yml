@@ -6,22 +6,22 @@ on:
       - main
 
 permissions:
-  contents: write  
-  pull-requests: write
+  contents: write
+  pull-requests: write  # Added pull-requests write permission
 
 jobs:
-  create_pull_request:
+  sync_to_staging:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Ensure full history is fetched for accurate comparison
+          fetch-depth: 0
 
       - name: Install GitHub CLI
         run: sudo apt-get install gh -y
 
-      - name: Configure Git for commit
+      - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -29,23 +29,33 @@ jobs:
       - name: Fetch all branches
         run: git fetch origin staging
 
-      - name: Check for differences
+      - name: Check for differences between main and staging
         id: check_diff
         run: |
           git diff --quiet origin/staging HEAD
-        continue-on-error: true  
+        continue-on-error: true  # This allows continuing if there are differences
 
-      - name: Create sync branch
+      - name: Create or update PR branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
-          git checkout -b sync-main-to-staging
+          git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
           git push origin sync-main-to-staging
 
-      - name: Create Pull Request
-        if: ${{ steps.check_diff.outcome == 'failure' }}
+      - name: Check if PR already exists
+        id: pr_check
+        run: |
+          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length'
+        continue-on-error: true  # This allows continuing if the PR exists
+
+      - name: Create new Pull Request
+        if: ${{ steps.pr_check.outputs.result == '0' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
+
+      - name: Skip PR creation if already exists
+        if: ${{ steps.pr_check.outputs.result != '0' }}
+        run: echo "PR already exists, skipping creation."
