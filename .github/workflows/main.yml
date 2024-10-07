@@ -6,41 +6,42 @@ on:
       - main
 
 permissions:
-  contents: write
-  pull-requests: write  # Ensure the workflow has permission to create/update PRs
+  contents: write  # Grant write permissions
+  pull-requests: write  # Grant write permissions for PRs
 
 jobs:
-  sync_to_staging:
+  create_pull_request:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      # Step 2: Install GitHub CLI
       - name: Install GitHub CLI
         run: sudo apt-get install gh -y
 
-      - name: Configure Git
+      # Step 3: Configure Git for commit
+      - name: Configure Git for commit
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+      # Step 4: Fetch all branches
       - name: Fetch all branches
         run: git fetch origin staging
 
-      - name: Check for differences between main and staging
+      # Step 5: Check for differences between main and staging
+      - name: Check for differences
         id: check_diff
         run: |
-          git diff --quiet origin/staging HEAD || echo "Differences found"
+          git diff --quiet origin/staging HEAD
+        continue-on-error: true  # Continue if differences are found
 
-      - name: Create or update PR branch
-        if: ${{ steps.check_diff.outcome == 'failure' }}  # Proceed only if there are differences
-        run: |
-          git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
-          git push origin sync-main-to-staging
-
-      - name: Close existing Pull Request (if any)
+      # Step 6: Close existing Pull Request (if any)
+      - name: Close existing Pull Request
         id: close_pr
         run: |
           existing_pr=$(gh pr list --base staging --head sync-main-to-staging --json number --jq '.[0].number')
@@ -50,17 +51,21 @@ jobs:
           else
             echo "No open PR to close"
           fi
-        continue-on-error: true  # This continues even if no PR exists
+        continue-on-error: true  # Continue even if no PR exists
 
-      - name: Create new Pull Request
+      # Step 7: Create new branch and push changes
+      - name: Create sync branch
+        if: ${{ steps.check_diff.outcome == 'failure' }}  # Proceed only if there are differences
+        run: |
+          git checkout -b sync-main-to-staging
+          git push origin sync-main-to-staging
+
+      # Step 8: Create Pull Request using Personal Access Token
+      - name: Create Pull Request
         if: ${{ steps.check_diff.outcome == 'failure' }}  # Only create if there are differences
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use PAT instead of GITHUB_TOKEN
         run: |
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
-      
-      - name: Inform if PR already exists
-        if: ${{ steps.check_diff.outcome == 'success' }}  # Only run if no differences were found
-        run: echo "No differences found. No new PR created."
