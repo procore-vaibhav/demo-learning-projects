@@ -42,6 +42,8 @@ jobs:
 
       - name: Create Pull Request
         if: ${{ steps.check_diff.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
