@@ -41,8 +41,15 @@ jobs:
           git push origin sync-main-to-staging
 
       - name: Close existing Pull Request (if any)
+        id: close_pr
         run: |
-          gh pr close --base staging --head sync-main-to-staging || echo "No open PR to close"
+          existing_pr=$(gh pr list --base staging --head sync-main-to-staging --json number --jq '.[0].number')
+          if [ -n "$existing_pr" ]; then
+            echo "Closing existing PR #$existing_pr"
+            gh pr close "$existing_pr"
+          else
+            echo "No open PR to close"
+          fi
         continue-on-error: true  # This continues even if no PR exists
 
       - name: Create new Pull Request
@@ -53,3 +60,7 @@ jobs:
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
+      
+      - name: Inform if PR already exists
+        if: ${{ steps.check_diff.outcome == 'success' }}  # Only run if no differences were found
+        run: echo "No differences found. No new PR created."
