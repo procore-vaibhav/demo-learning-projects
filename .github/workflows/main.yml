@@ -64,7 +64,7 @@ jobs:
       - name: Create Pull Request
         if: ${{ steps.check_diff.outcome == 'failure' }}  # Only create if there are differences
         env:
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use PAT instead of GITHUB_TOKEN
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         run: |
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
