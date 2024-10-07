@@ -6,8 +6,8 @@ on:
       - main
 
 permissions:
-  contents: write  # Grant write permissions
-  pull-requests: write  # Grant write permissions for PRs
+  contents: write  # Grant write permissions to contents
+  pull-requests: write  # Grant write permissions to pull requests
 
 jobs:
   create_pull_request:
@@ -43,6 +43,8 @@ jobs:
       # Step 6: Check if a Pull Request already exists
       - name: Check if Pull Request exists
         id: pr_check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Pass the GitHub token for authentication
         run: |
           pr_number=$(gh pr list --base staging --head sync-main-to-staging --json number --jq '.[].number')
           if [ -n "$pr_number" ]; then
@@ -65,7 +67,7 @@ jobs:
       - name: Create sync branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
-          git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
+          git checkout -b sync-main-to-staging
           git push origin sync-main-to-staging
 
       # Step 9: Create new Pull Request
