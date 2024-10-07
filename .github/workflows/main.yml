@@ -1,0 +1,48 @@
+name: Auto PR from Main to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  
+
+jobs:
+  create_pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure full history is fetched for accurate comparison
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
+      - name: Configure Git for commit
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Fetch all branches
+        run: git fetch origin staging
+
+      - name: Check for differences
+        id: check_diff
+        run: |
+          git diff --quiet origin/staging HEAD
+        continue-on-error: true  
+
+      - name: Create sync branch
+        if: ${{ steps.check_diff.outcome == 'failure' }}
+        run: |
+          git checkout -b sync-main-to-staging
+          git push origin sync-main-to-staging
+
+      - name: Create Pull Request
+        if: ${{ steps.check_diff.outcome == 'failure' }}
+        run: |
+          gh pr create --base staging --head sync-main-to-staging \
+          --title "Auto PR: Sync changes from main to staging" \
+          --body "This PR automatically syncs changes from the main branch to staging."
