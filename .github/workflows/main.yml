@@ -64,7 +64,6 @@ jobs:
           gh pr close ${{ steps.pr_check.outputs.pr_number }}
 
       # Step 8: Recreate sync branch and push changes
-      # Recreating the sync-main-to-staging branch after the previous PR is closed
       - name: Recreate sync branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
@@ -83,8 +82,9 @@ jobs:
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
 
-      # Step 10: Delete the local sync-main-to-staging branch (optional cleanup)
-      - name: Delete local sync branch
+      # Step 10: Switch to another branch and delete the sync branch
+      - name: Switch to main and delete sync branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
-          git branch -D sync-main-to-staging
+          git checkout main
+          git branch -D sync-main-to-staging  # Delete the local sync branch after switching
