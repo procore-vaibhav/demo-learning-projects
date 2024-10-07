@@ -29,7 +29,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      # Step 4: Fetch all branches
+      # Step 4: Fetch staging branch
       - name: Fetch all branches
         run: git fetch origin staging
 
@@ -55,9 +55,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the GITHUB_TOKEN provided by GitHub Actions
         run: |
           echo "Closing existing PR #${{ steps.pr_check.outputs.pr_number }}"
-          gh pr close ${{ steps.pr_check.outputs.pr_number }}
+          gh pr close ${{ steps.pr_check.outputs.pr_number }} --delete-branch
 
-      # Step 8: Create sync branch
+      # Step 8: Create sync branch and push changes
       - name: Create sync branch
         if: ${{ steps.check_diff.outcome == 'failure' }}
         run: |
