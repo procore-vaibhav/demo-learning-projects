@@ -40,20 +40,16 @@ jobs:
           git checkout -b sync-main-to-staging || git checkout sync-main-to-staging
           git push origin sync-main-to-staging
 
-      - name: Check if PR already exists
-        id: pr_check
+      - name: Close existing Pull Request (if any)
         run: |
-          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length' || echo "PR check failed"
-        
-      - name: Create Pull Request if none exists
-        if: ${{ steps.pr_check.outputs.result == '0' }}
+          gh pr close --base staging --head sync-main-to-staging || echo "No open PR to close"
+        continue-on-error: true  # This continues even if no PR exists
+
+      - name: Create new Pull Request
+        if: ${{ steps.check_diff.outcome == 'failure' }}  # Only create if there are differences
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --base staging --head sync-main-to-staging \
           --title "Auto PR: Sync changes from main to staging" \
           --body "This PR automatically syncs changes from the main branch to staging."
-
-      - name: PR already exists, skip creation
-        if: ${{ steps.pr_check.outputs.result != '0' }}
-        run: echo "PR already exists, skipping creation."
