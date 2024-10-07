@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write  # Ensuring PR write permissions
+  pull-requests: write  # Ensure the workflow has permission to create/update PRs
 
 jobs:
   sync_to_staging:
@@ -32,8 +32,7 @@ jobs:
       - name: Check for differences between main and staging
         id: check_diff
         run: |
-          git diff --quiet origin/staging HEAD
-        continue-on-error: true  # Allow continuing if differences exist (to create PR)
+          git diff --quiet origin/staging HEAD || echo "Differences found"
 
       - name: Create or update PR branch
         if: ${{ steps.check_diff.outcome == 'failure' }}  # Proceed only if there are differences
@@ -44,9 +43,8 @@ jobs:
       - name: Check if PR already exists
         id: pr_check
         run: |
-          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length'
-        continue-on-error: true  # Continue if PR exists
-
+          gh pr list --base staging --head sync-main-to-staging --json number --jq '. | length' || echo "PR check failed"
+        
       - name: Create Pull Request if none exists
         if: ${{ steps.pr_check.outputs.result == '0' }}
         env:
