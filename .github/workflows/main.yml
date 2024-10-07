@@ -27,6 +27,7 @@ jobs:
         continue-on-error: true 
 
       - name: Check if Pull Request exists
+        if: ${{ steps.check_diff.outcome == 'failure' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         run: |
